@@ -1,0 +1,16 @@
+{
+  "name": "repo-setup",
+  "owner": {
+    "name": "janesenaj42"
+  },
+  "metadata": {
+    "description": "The baseline plugin, from janesenaj42/repo-setup"
+  },
+  "plugins": [
+    {
+      "name": "baseline",
+      "source": "./",
+      "description": "Claude hooks that run each project's checks, and /baseline:adopt-baseline"
+    }
+  ]
+}

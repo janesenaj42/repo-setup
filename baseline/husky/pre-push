@@ -1,0 +1,2 @@
+# Baseline: <type>/[<issue number>/]<short-description>.
+node .baseline/checks/branch-name.mjs || exit 1

@@ -1,0 +1,8 @@
+{
+  "name": "baseline",
+  "description": "Claude hooks that run each project's checks after an edit and before a turn ends, /baseline:adopt-baseline, and a note when the repository's baseline files are out of date",
+  "version": "1.4.2",
+  "author": {
+    "name": "janesenaj42"
+  }
+}

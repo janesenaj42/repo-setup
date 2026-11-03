@@ -1,0 +1,56 @@
+{
+  "name": "@janesenaj42/repo-setup",
+  "version": "1.4.2",
+  "description": "Sets up or updates any repository: git files, git hooks, commit checks and Claude Code setup, for React, TypeScript, Java (Gradle) and Python.",
+  "type": "module",
+  "bin": {
+    "repo-setup": "./cli/repo-setup.mjs"
+  },
+  "files": [
+    "cli",
+    "lib",
+    "baseline"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/janesenaj42/repo-setup.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test",
+    "release:patch": "commit-and-tag-version --release-as patch",
+    "release:minor": "commit-and-tag-version --release-as minor",
+    "release:major": "commit-and-tag-version --release-as major",
+    "prepare": "lefthook install"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
+    "@commitlint/load": "^21.2.3",
+    "commit-and-tag-version": "^13.2.1",
+    "lefthook": "^2.1.17"
+  },
+  "commit-and-tag-version": {
+    "bumpFiles": [
+      {
+        "filename": "package.json",
+        "type": "json"
+      },
+      {
+        "filename": ".claude-plugin/plugin.json",
+        "type": "json"
+      }
+    ],
+    "scripts": {
+      "postbump": "npm test"
+    },
+    "skip": {
+      "tag": true
+    }
+  }
+}

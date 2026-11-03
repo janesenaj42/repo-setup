@@ -1,0 +1,70 @@
+// Fails unless a PR description follows the repository's PR template: it starts by naming the
+// issue it closes ("Closes #12") or why there is none ("No issue: hotfix"), and has every "## "
+// section of the template, each with something in it ("None" is fine). A template heading ending
+// in "(optional)" may be left out. The sections are read from the template, so changing the
+// template changes the check. A repository with no template of its own uses the organization's
+// default one, which CI passes in PR_TEMPLATE; with neither, only the first line is checked.
+//
+// GitHub fills the template in only when a PR is opened in the web UI; `gh pr create --body`, the
+// API and tools that use them skip it without a word.
+//
+// Usage: PR_BODY=... [BRANCH=...] [PR_TEMPLATE=<file>] node .baseline/checks/pr-description.mjs
+// Run by CI on every PR, and again when its description is edited.
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+// Opened by tools, not people (same list as branch-name.mjs).
+const EXEMPT = [/^release-please--/, /^dependabot\//, /^renovate\//];
+
+// The places GitHub reads a PR template from, in its order.
+const TEMPLATES = [
+  '.github/pull_request_template.md',
+  '.github/PULL_REQUEST_TEMPLATE.md',
+  'pull_request_template.md',
+  'PULL_REQUEST_TEMPLATE.md',
+  'docs/pull_request_template.md',
+  'docs/PULL_REQUEST_TEMPLATE.md',
+];
+
+const branch = process.env.BRANCH ?? '';
+if (EXEMPT.some((pattern) => pattern.test(branch))) process.exit(0);
+
+/** Text without HTML comments (the template's instructions). */
+const stripComments = (text) => text.replace(/<!--[\s\S]*?-->/g, '');
+
+/** The "## " sections of a Markdown text, in order, with what each holds. */
+function sections(text) {
+  const parts = stripComments(text).replace(/\r\n/g, '\n').split(/^## +(.+?)\s*$/m);
+  const found = [];
+  for (let i = 1; i < parts.length; i += 2) found.push({ heading: parts[i], body: parts[i + 1].trim() });
+  return { intro: parts[0].trim(), found };
+}
+
+const root = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
+const own = TEMPLATES.find((path) => existsSync(join(root, path)));
+const template = own ? join(root, own) : process.env.PR_TEMPLATE || undefined;
+const required = template
+  ? sections(readFileSync(template, 'utf8'))
+      .found.map((s) => s.heading)
+      .filter((heading) => !/\(optional\)$/i.test(heading))
+  : [];
+const { intro, found } = sections(process.env.PR_BODY ?? '');
+
+const problems = [];
+if (!/^(?:(?:Closes|Fixes|Resolves) +(?:[\w.-]+\/[\w.-]+)?#\d+|No issue: *\S)/im.test(intro)) {
+  problems.push('Start with "Closes #<issue>", or "No issue: <why>".');
+}
+for (const heading of required) {
+  const section = found.find((s) => s.heading.toLowerCase() === heading.toLowerCase());
+  if (!section) problems.push(`Missing "## ${heading}".`);
+  else if (!section.body) problems.push(`"## ${heading}" is empty (write "None" if there's nothing to say).`);
+}
+
+if (problems.length) {
+  console.error(`The PR description doesn't follow ${own ?? (template ? "the organization's PR template" : 'the PR rules')}:
+${problems.map((p) => `  - ${p}`).join('\n')}
+
+Edit the description; this check runs again on its own.`);
+  process.exit(1);
+}

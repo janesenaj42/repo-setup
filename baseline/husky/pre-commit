@@ -1,0 +1,2 @@
+# Baseline: staged .json and .jsonc files parse (JSONC where the tool allows comments).
+git diff --cached --name-only --diff-filter=ACMR -- '*.json' '*.jsonc' | xargs node .baseline/checks/json-valid.mjs || exit 1

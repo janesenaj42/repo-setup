@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!-- The root CLAUDE.md "Code review standards" rules Checkstyle can check. Formatting is
+     Spotless's job (build.gradle.kts), so no layout rules here. -->
+<module name="Checker">
+  <property name="severity" value="error"/>
+  <module name="TreeWalker">
+    <module name="MethodLength">
+      <property name="max" value="30"/>
+      <property name="countEmpty" value="false"/>
+    </module>
+    <module name="MagicNumber">
+      <property name="ignoreHashCodeMethod" value="true"/>
+      <property name="ignoreAnnotation" value="true"/>
+      <property name="ignoreFieldDeclaration" value="true"/>
+    </module>
+  </module>
+</module>
